@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="http://weblibraries.s3.amazonaws.com/jquery.pnotify.default.css">
+    <link rel="stylesheet" href="http://weblibraries.s3.amazonaws.com/jquery.pnotify.default.icons.css">
+    <style type="text/css">
+        body {
+            padding-top: 60px;
+            padding-bottom: 40px;
+        }
+        .progress { position:relative; width:300px; border: 1px solid #ddd; border-radius: 3px; margin-top:5px; margin-bottom:5px; }
+        .bar { background-color: #B4F5B4; width:0%; height:20px; border-radius: 3px; }
+        .bar-error { background-color: #FF0000; }
+        .percent { position:absolute; display:inline-block; top:3px; left:48%; }
+
+    </style>
+
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-md-12 col-lg-12">
+            <form id="form-create" role="form" class="form form-horizontal" style="display:none;">
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input id="description" name="description" type="text" placeholder="description" class="input-lg form-control" required=""/>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input id="tags" name="tags" type="text" placeholder="tag1,tag2,tag3" class="input-lg form-control"/>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+
+            <form id="form-upload-images" role="form" class="form form-horizontal" style="display:none;">
+                <div class="form-group">
+                    <label for="file">File</label>
+                    <input id="file" name="file" type="file" class="input-lg form-control" required=""/>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+
+            <button type="button" class="btn btn-default" id="create">Create</button>
+            <button type="button" class="btn btn-default" id="create-or-update">Create or Update</button>
+            <button type="button" class="btn btn-default" id="update">Update</button>
+            <button type="button" class="btn btn-default" id="delete">Delete</button>
+            <button type="button" class="btn btn-default" id="get-lines">Get Lines</button>
+            <button type="button" class="btn btn-default" id="get-lines-ids">Get Lines Ids</button>
+            <button type="button" class="btn btn-default" id="get-column">Get Column</button>
+            <button type="button" class="btn btn-default" id="clear">Clear</button>
+
+            <table id="table-list" class="table table-striped table-hover table-condensed table-responsive tablesorter">
+                <thead>
+                    <tr>
+                        <th class="col-lg-3">Description</th>
+                        <th class="col-lg-4">Tags</th>
+                        <th class="col-lg-2">Button</th>
+                        <th class="col-lg-1">Update</th>
+                        <th class="col-lg-1">Delete</th>
+                        <th class="col-lg-1">Log</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+      </div>
+
+      <hr/>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/jquery.pnotify.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/jquery.tablesorter.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/jquery.form.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/hmac-sha256.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/enc-base64.min.js"></script>
+    <!-- PRODUCTION -->
+    <script src="http://weblibraries.s3.amazonaws.com/secret-rest-client.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/secret-data-table.min.js"></script>
+    <!-- DEV -->
+    <script src="secret-data-table.js"></script>
+
+    <script language="JavaScript">
+        $(document).ready(function() {
+            var secretTable = new SecretDataTable({
+                table: $("#table-list"),
+                columns: [
+                    function(data, id) { return data.description },
+                    function(data, id) { return data.tags },
+                    function(data, id) {
+                        return createUploadFilesButton($("#form-upload-images"));
+                    },
+                ],
+                formCreate: $("#form-create"),
+                formUpdate: $("#form-create"),
+                create: true,
+                update: true,
+                del: true,
+                log: true,
+                onTableLoad: function(table){},
+                onCreate: function(table, data){ table.createLine(new Date().getTime(), data); },
+                onUpdate: function(table, id, data){ table.updateLine(id, data); },
+                onCreateOrUpdate: function(table, id, data){ table.createOrUpdateLine(data._id || id, data); },
+                onDelete: function(table, id, data){ table.deleteLine(id, data); },
+                onTableChange: function(table){},
+                onModalReady: function(modal){}
+            });
+
+            $("#create").on('click', function() {
+                secretTable.createLine("123", {description:"test", tags:"abc"})
+            });
+            $("#create-or-update").on('click', function() {
+                secretTable.createOrUpdateLine("123", {description:"test2", tags:"abc2"})
+                secretTable.createOrUpdateLine("1234", {description:"test3", tags:"abc3"})
+            });
+            $("#update").on('click', function() {
+                secretTable.createOrUpdateLine("1234", {description:"test4", tags:"abc4"})
+            });
+            $("#delete").on('click', function() {
+                secretTable.deleteLine("1234")
+            });
+            $("#get-lines").on('click', function() {
+                console.log(secretTable.getLines())
+            });
+            $("#get-lines-ids").on('click', function() {
+                console.log(secretTable.getLinesIds())
+            });
+            $("#get-column").on('click', function() {
+                console.log(secretTable.getColumn(0))
+            });
+            $("#clear").on('click', function() {
+                console.log(secretTable.clear())
+            });
+        });
+    </script>
+
+
+  </body>
+</html>

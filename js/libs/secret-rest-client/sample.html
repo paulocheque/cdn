@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap.min.css">
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/css/bootstrap-theme.min.css">
+    <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/themes/smoothness/jquery-ui.css" />
+    <link rel="stylesheet" href="http://weblibraries.s3.amazonaws.com/jquery.pnotify.default.css">
+    <link rel="stylesheet" href="http://weblibraries.s3.amazonaws.com/jquery.pnotify.default.icons.css">
+    <style type="text/css">
+      body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+    </style>
+
+    <link href="http://netdna.bootstrapcdn.com/font-awesome/4.0.3/css/font-awesome.css" rel="stylesheet">
+  </head>
+
+  <body>
+    <div class="container">
+      <div class="row">
+        <div class="col-xs-12 col-md-12 col-lg-12">
+            <form id="form-create" role="form" class="form form-horizontal" style="display:none;">
+                <div class="form-group">
+                    <label for="description">Description</label>
+                    <input id="description" name="description" type="text" placeholder="description" class="input-lg form-control" required=""/>
+                </div>
+                <div class="form-group">
+                    <label for="tags">Tags</label>
+                    <input id="tags" name="tags" type="text" placeholder="tag1,tag2,tag3" class="input-lg form-control"/>
+                </div>
+                <button type="submit" class="btn btn-primary">Save</button>
+            </form>
+
+            <table id="table-list" class="table table-striped table-hover table-condensed table-responsive tablesorter">
+                <thead>
+                    <tr>
+                        <th class="col-lg-4">Description</th>
+                        <th class="col-lg-4">Tags</th>
+                        <th class="col-lg-2">Button</th>
+                        <th class="col-lg-1">Update</th>
+                        <th class="col-lg-1">Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                </tbody>
+            </table>
+        </div>
+      </div>
+
+      <hr/>
+    </div>
+
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.10.4/jquery-ui.min.js"></script>
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/jquery.pnotify.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/jquery.tablesorter.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/hmac-sha256.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/enc-base64.min.js"></script>
+    <!-- PRODUCTION -->
+    <script src="http://weblibraries.s3.amazonaws.com/secret-rest-client.min.js"></script>
+    <script src="http://weblibraries.s3.amazonaws.com/secret-data-table.min.js"></script>
+    <!-- DEV -->
+    <script src="secret-rest-client.js"></script>
+
+    <script language="JavaScript">
+        $(document).ready(function() {
+            var defaultErrorHandler = function(response, status) {
+              $.pnotify({
+                  type: 'notice',
+                  delay: 3000,
+                  title: 'Invalid action',
+                  text: 'Could not retrieve server data right now'
+              });
+            };
+
+            var client = new SecretRestClient("123", "456", "/api/", "1");
+
+            client.list(0, 5, function(lines, status) {
+              for (var i in lines) {
+                  var data = lines[i];
+                  //console.debug(data);
+                  table.createLine(data._id, data);
+              }
+            }, defaultErrorHandler);
+
+            var successHandler = function(response, status) {
+                table.createLine(response._id, data);
+            };
+            client.create({test:"test"}, successHandler, defaultErrorHandler);
+
+            var successHandler = function(response, status) {
+                var handler = function(response, status) {
+                    table.updateLine(id, response);
+                }
+                client.read(id, handler);
+            };
+            client.update("123", {test:"test"}, successHandler, defaultErrorHandler);
+
+            var successHandler = function(response, status) {
+                table.deleteLine(id, data);
+            };
+            client.del("123", successHandler, defaultErrorHandler);
+        });
+    </script>
+
+
+  </body>
+</html>

@@ -1,0 +1,7 @@
+python-dateutil
+requests
+six
+pillow==2.5.1
+
+boto
+boto_rsync
